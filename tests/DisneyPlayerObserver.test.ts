@@ -17,7 +17,7 @@ beforeEach(() => {
   const url = 'https://www.disneyplus.com/es-es/play/bluey';
   const state: PlaylistState = { episodes: [{ id: '1', title: 'Bluey', url }], session: { runId: 'run', index: 0, tabId: 42, status: 'playing', startedAt: new Date().toISOString(), endedAt: null, reason: null, limitSeconds: null, watchedSeconds: 0, meters: {}, entries: [{ id: '1', title: 'Bluey', url, watchedSeconds: 0, completed: false, byDay: {} }] }, history: [], limitSeconds: null };
   vi.stubGlobal('location', { href: url });
-  vi.stubGlobal('document', { querySelectorAll: (selector: string) => selector === 'video' ? [video] : [], title: 'Bluey' });
+  vi.stubGlobal('document', { addEventListener: vi.fn(), querySelectorAll: (selector: string) => selector === 'video' ? [video] : [], title: 'Bluey' });
   vi.stubGlobal('window', { setInterval });
   vi.stubGlobal('chrome', { runtime: {
     onMessage: { addListener: vi.fn() },
@@ -34,11 +34,28 @@ beforeEach(() => {
 afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 describe('Observador con un reproductor simulado', () => {
+  it('conserva los metadatos del clic aunque abrir el panel retire la tarjeta', async () => {
+    const { EpisodeMetadataReader } = await import('../src/extension/EpisodeMetadataReader');
+    const target='https://www.disneyplus.com/play/target';
+    vi.spyOn(EpisodeMetadataReader.prototype,'fromClick').mockReturnValue({url:target,title:'Hospital',durationSeconds:420});
+    vi.spyOn(EpisodeMetadataReader.prototype,'read').mockReturnValue({url:target,title:'',durationSeconds:null});
+    await import('../src/extension/content');
+    const onContext=vi.mocked(document.addEventListener).mock.calls.find(call=>call[0]==='contextmenu')![1] as (event:unknown)=>void;
+    onContext({composedPath:()=>[]});
+    const respond=vi.fn();
+    const listener=vi.mocked(chrome.runtime.onMessage.addListener).mock.calls[0][0];
+    listener({type:'CAPTURE_CONTEXT',url:target},{},respond);
+    expect(respond).toHaveBeenCalledWith({url:target,title:'Hospital',durationSeconds:420});
+    respond.mockClear();
+    listener({type:'CAPTURE_CONTEXT',url:'https://www.disneyplus.com/play/different'},{},respond);
+    expect(respond.mock.calls[0][0].title).toBe('');
+  });
+
   it('encuentra el vídeo del shadow DOM aunque el primero esté vacío', async () => {
     const placeholder = new FakeVideo();
     placeholder.currentTime = 0; placeholder.duration = NaN; placeholder.readyState = 0; placeholder.paused = true;
-    const shadowRoot = { querySelectorAll: (selector: string) => selector === 'video' ? [video] : [] };
-    vi.stubGlobal('document', { querySelectorAll: (selector: string) => selector === 'video' ? [placeholder] : [{ shadowRoot }], title: 'Bluey' });
+    const shadowRoot = { addEventListener: vi.fn(), querySelectorAll: (selector: string) => selector === 'video' ? [video] : [] };
+    vi.stubGlobal('document', { addEventListener: vi.fn(), querySelectorAll: (selector: string) => selector === 'video' ? [placeholder] : [{ shadowRoot }], title: 'Bluey' });
     await import('../src/extension/content');
     video.currentTime = 99.6;
     await vi.advanceTimersByTimeAsync(2000);

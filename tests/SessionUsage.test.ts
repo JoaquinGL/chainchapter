@@ -76,7 +76,7 @@ describe('Sesiones, límites e informes', () => {
     expect(SessionReports.json(sessions)).not.toContain('meters');
   });
   it('siguiente manual registra parcial y detener no muestra la despedida', async () => {
-    const {service,finished} = setup();await service.add('Bluey',url);await service.add('Otra vez',url);
+    const {service,finished} = setup();await service.add('Bluey',url);await service.add('Otro capítulo','https://www.disneyplus.com/play/other');
     await service.start(42);const run=(await service.getState()).session!.runId;
     await service.advance(42,url,run,0,false);await service.stop();
     expect((await service.getState()).history[0].entries[0].completed).toBe(false);

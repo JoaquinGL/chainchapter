@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Chain Chapters",
-  "version": "0.3.3",
+  "version": "0.3.6",
   "description": "Guarda y ordena episodios para reproducir una cola personal en Disney+.",
   "permissions": [
     "storage",

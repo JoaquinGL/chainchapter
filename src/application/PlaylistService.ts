@@ -18,6 +18,8 @@ export class PlaylistService {
   /** Añade un episodio con duración detectada o manual. */
   async add(title: string, url: string, durationSeconds?: number | null): Promise<void> {
     const state = await this.editableState();
+    const duplicate=state.episodes.find(e=>isSameEpisode(e.url,url));
+    if(duplicate)throw new Error(`«${duplicate.title}» ya está en tu lista. No se ha añadido otra vez.`);
     state.episodes.push({ ...createEpisode(title, url, crypto.randomUUID()), durationSeconds: this.duration(durationSeconds) });
     await this.repository.save(state);
   }

@@ -1,3 +1,4 @@
+import { EpisodeMetadataReader } from './EpisodeMetadataReader';
 import { isSameEpisode } from '../domain/Episode';
 import type { Reply } from './messages';
 import { PlaybackEndDetector } from './PlaybackEndDetector';
@@ -24,6 +25,10 @@ export class DisneyPlayerObserver {
   private sourceId = crypto.randomUUID();
   private readonly durationReader = new DurationReader();
   private lastRefresh = 0;
+  private contextTarget: Element | null = null;
+  private contextSnapshot: ReturnType<EpisodeMetadataReader['fromClick']> = null;
+  private contextSnapshotAt = 0;
+  private readonly metadataReader = new EpisodeMetadataReader();
   private readonly detector = new PlaybackEndDetector();
   private constructor() {}
   /** Devuelve un observador único para evitar listeners duplicados. */
@@ -31,18 +36,25 @@ export class DisneyPlayerObserver {
 
   /** Registra captura, diagnóstico y un sondeo independiente del evento ended. */
   start(): void {
+    document.addEventListener('contextmenu', event => {
+      const path=event.composedPath();
+      this.contextTarget=path.find(node=>node instanceof Element) as Element | undefined ?? null;
+      this.contextSnapshot=this.metadataReader.fromClick(document,path);
+      this.contextSnapshotAt=Date.now();
+    }, true);
     void this.refresh();
     window.setInterval(() => void this.refresh(), 1000);
     chrome.runtime.onMessage.addListener((message, _sender, respond) => {
       if (message?.type === 'CAPTURE') {
-        respond({ title: document.title.replace(/\s*[|–-]\s*Disney\+.*$/, '').trim(), url: location.href, durationSeconds: this.durationReader.read(this.locator.select(this.locator.scan(document).videos, this.currentVideo), document) });
+        respond({ title: this.metadataReader.currentTitle(document), url: location.href, durationSeconds: this.durationReader.read(this.locator.select(this.locator.scan(document).videos, this.currentVideo), document) });
       }
       if (message?.type === 'CAPTURE_CONTEXT' && typeof message.url === 'string') {
         const current=isSameEpisode(message.url,location.href);
-        const anchor=Array.from(document.querySelectorAll<HTMLAnchorElement>('a[href]')).find(link=>isSameEpisode(link.href,message.url));
-        const title=current ? document.title.replace(/\s*[|–-]\s*Disney\+.*$/, '').trim()
-          : (anchor?.getAttribute('aria-label') || anchor?.textContent || anchor?.querySelector('img')?.alt || '').trim();
-        respond({url:message.url,title,durationSeconds:current ? this.durationReader.read(this.locator.select(this.locator.scan(document).videos,this.currentVideo),document) : null});
+        const fresh=this.metadataReader.read(document,message.url,this.contextTarget);
+        const snapshot=this.contextSnapshot && Date.now()-this.contextSnapshotAt<300000 && isSameEpisode(this.contextSnapshot.url,message.url) ? this.contextSnapshot : null;
+        const metadata={...fresh,title:snapshot?.title || fresh.title,durationSeconds:snapshot?.durationSeconds ?? fresh.durationSeconds};
+        respond({url:message.url,title:metadata.title || (current ? this.metadataReader.currentTitle(document) : ''),
+          durationSeconds:current ? this.durationReader.read(this.locator.select(this.locator.scan(document).videos,this.currentVideo),document) ?? metadata.durationSeconds : metadata.durationSeconds});
       }
       if (message?.type === 'PAUSE_FOR_END') {
         for (const video of this.locator.scan(document).videos) video.pause();
@@ -57,7 +69,7 @@ export class DisneyPlayerObserver {
     const video = this.currentVideo;
     const seconds = PlayerDiagnostics.seconds;
     return [
-      `Observador 0.3.3: ${video ? 'vídeo detectado' : 'no se encuentra el vídeo'}.`,
+      `Observador 0.3.6: ${video ? 'vídeo detectado' : 'no se encuentra el vídeo'}.`,
       video ? `Tiempo ${seconds(video.currentTime)} / ${seconds(video.duration)} s. Final: ${video.ended ? 'sí' : 'no'}. Buscando: ${video.seeking ? 'sí' : 'no'}.` : '',
       `Candidatos: ${this.inventory.videos.length}. Marcos inaccesibles: ${this.inventory.inaccessibleFrames}.`,
       ...this.inventory.videos.map((candidate, index) => `Vídeo ${index + 1}${candidate === video ? ' (seleccionado)' : ''}: ${seconds(candidate.currentTime)} / ${seconds(candidate.duration)} s, readyState=${candidate.readyState}, pausado=${candidate.paused}, final=${candidate.ended}.`),

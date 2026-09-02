@@ -1,99 +1,178 @@
-# Chain Chapters — 0.3.3
+<p align="center">
+  <img src="public/icons/icon-128.png" width="96" height="96" alt="Icono de Chain Chapters">
+</p>
 
-Una extensión React + TypeScript con **panel lateral persistente**. Abres un capítulo en Disney+, pulsas **Capturar capítulo** y se añade directamente. Puedes seguir navegando con la lista al lado.
+# Chain Chapters
 
-## Actualizar
+**Elige los capítulos, prepara una lista y decide cuánto dura la sesión de tele.**
+
+Chain Chapters es una extensión de Chrome para crear listas de episodios de Disney+, incluso de distintas series, y reproducirlos en el orden elegido. Su panel lateral permanece abierto mientras navegas por el catálogo.
+
+**Versión actual: 0.3.6 · Prueba de concepto · React + TypeScript · Manifest V3**
+
+## Qué puedes hacer
+
+- Añadir un episodio desde su tarjeta con **botón derecho → Añadir a Chain Chapters**, o capturar el capítulo abierto desde el panel.
+- Obtener el título y la duración cuando estén disponibles en la página.
+- Editar nombres y tiempos directamente en la lista, reordenar capítulos y eliminar entradas.
+- Evitar duplicados al añadir capítulos individualmente, aunque cambie el prefijo de idioma de la URL.
+- Ver la duración conocida de la lista y establecer un límite de tiempo de reproducción.
+- Avanzar al siguiente episodio al terminar el anterior.
+- Mostrar una despedida infantil cuando termina la lista o se alcanza el límite.
+- Guardar y cargar listas Markdown, o pegar enlaces con nombre y duración.
+- Descargar informes de sesiones y tiempo mensual sin llenar la interfaz de estadísticas.
+
+## Instalación
+
+Necesitas **Chrome de escritorio 116 o posterior**, **Node.js 22.12 o posterior** y npm para compilar. También necesitas acceso a Disney+ desde el navegador.
 
 ```bash
-cd chain-chapters
+git clone git@github.com:JoaquinGL/chainchapter.git
+cd chainchapter
 npm ci
 npm run build
 ```
 
-En `chrome://extensions`, recarga Chain Chapters y comprueba que muestra **0.3.3**. Si aún no está instalada: activa Modo de desarrollador → Cargar descomprimida → selecciona la carpeta `dist/` del proyecto.
+Si no tienes SSH configurado en GitHub, puedes clonar con HTTPS:
 
-**Recarga también la pestaña Disney+.** Pulsa el icono de Chain Chapters: ahora abre el panel lateral de Chrome, no el popup anterior. La versión requiere Chrome 116+ y añade el permiso `sidePanel`. El panel global permanece al cambiar de capítulo o pestaña; se puede cerrar con los controles de Chrome. Los datos existentes se conservan.
+```bash
+git clone https://github.com/JoaquinGL/chainchapter.git
+```
 
-## Uso sencillo
+Después de compilar:
 
-1. Abre un capítulo de Disney+.
-2. Pulsa **Capturar capítulo**: añade nombre, URL y tiempo disponible en un clic.
-3. Sigue navegando hasta otro capítulo y vuelve a capturar.
-4. Edita **nombre y tiempo en la propia fila**. Se guardan al salir de la fila o pulsar Enter. Despliega «Enlace» para corregir la URL. Usa las flechas para ordenar.
-5. Arriba, pulsa **Sin límite** (o el límite actual) y escribe los minutos. Se guardan al salir del campo; **vacío = sin límite**. No hay casilla ni botón Guardar.
-6. Pulsa **Reproducir lista** con Disney+ en la pestaña activa.
+1. Abre `chrome://extensions`.
+2. Activa **Modo de desarrollador**.
+3. Pulsa **Cargar descomprimida** y selecciona la carpeta **`dist/`** del proyecto.
+4. Fija el icono de Chain Chapters en la barra de Chrome.
+5. Abre Disney+ y recarga cualquier pestaña que ya estuviera abierta.
+6. Pulsa el icono de la extensión para abrir su panel lateral.
 
-La despedida infantil se abre al terminar la lista o el tiempo. Las pausas no consumen tiempo y los saltos en la barra no suman minutos. «Detener cola» guarda la sesión y cancela el seguimiento; el vídeo continúa. Mantén desactivado el autoplay del perfil Disney+.
+`dist/` se genera al compilar y no está incluido en Git. No hace falta mantener el servidor de desarrollo encendido para usar la extensión instalada.
 
-## Apuntar capítulos sin capturarlos
+### Actualizar una instalación
 
-- **Escribir capítulo** abre un formulario pequeño con nombre, URL y duración.
-- **Pegar lista** acepta una línea por capítulo: `Nombre | URL | Duración`.
-- **Cargar .md** añade una lista guardada sin borrar lo que ya tienes. Se valida completa antes de modificar la cola.
-- **Guardar .md** descarga la lista actual como tabla Markdown. Puedes editarla en cualquier editor de texto y enviarla por correo tú mismo.
+```bash
+git pull
+npm ci
+npm run build
+```
 
-Ejemplo de formato (los IDs son sólo marcadores de posición):
+En `chrome://extensions`, pulsa **Recargar** en Chain Chapters. **Recarga también las pestañas de Disney+**: el observador que ya estaba cargado no se sustituye hasta recargar la página. Puedes comprobar la versión en la ficha de la extensión.
+
+## Preparar y reproducir una lista
+
+1. En Disney+, haz clic derecho sobre el enlace de un capítulo y elige **Añadir a Chain Chapters**. También puedes abrir el capítulo y pulsar **Capturar capítulo** en el panel.
+2. Repite con los capítulos que quieras, incluso de otras series.
+3. Revisa el nombre y el tiempo de cada fila. Puedes editarlos directamente; se guardan al salir del campo o pulsar Enter. Despliega **Enlace** para corregir la URL y usa las flechas para ordenar.
+4. Para limitar la sesión, pulsa **Sin límite** en la parte superior y escribe los minutos, por ejemplo `60`. Dejarlo vacío elimina el límite.
+5. Con Disney+ en la pestaña activa, pulsa **Reproducir lista**.
+
+Mantén desactivada la reproducción automática del perfil de Disney+ para que la extensión gestione el orden. Durante la sesión, detén la lista antes de editarla.
+
+El límite cuenta el tiempo medido de reproducción: las pausas no consumen minutos y adelantar el vídeo no suma el tramo saltado. Al alcanzar el límite, puede cortar el episodio en curso. Al terminar, sustituye la página del reproductor por la pantalla de despedida.
+
+**Detener cola** cierra el registro y cancela el seguimiento; no pausa el vídeo que esté reproduciéndose.
+
+### Cómo se capturan el nombre y la duración
+
+La captura del menú contextual conserva los datos al hacer clic, antes de que abrir el panel cambie la disposición de la página. En las tarjetas compatibles lee el título del episodio y prefiere la duración accesible exacta a la etiqueta visual redondeada: por ejemplo, `27 minutos,41 s` se guarda como **27:41**, sin sumarle el texto `(27 min)`.
+
+En el reproductor intenta leer la duración del vídeo o interpretar sus controles de tiempo. Si no encuentra el nombre, conserva el enlace como **Capítulo pendiente de nombre** para que puedas editarlo. Si falta la duración, queda pendiente; no se inventa. El total de la lista sólo incluye las duraciones conocidas. Durante una sesión puede aprender una duración que aparezca más tarde.
+
+Los enlaces admitidos son URLs directas de episodios de Disney+: `/play/ID` o `/video/ID`, con prefijo de idioma opcional como `/es-es/`. Una ficha de serie no equivale a un enlace de episodio.
+
+## Guardar, compartir y cargar listas
+
+**Guardar .md** descarga la lista como un archivo Markdown que puedes editar o compartir. **Cargar .md** añade sus capítulos a la lista existente. También puedes usar **Escribir capítulo** o **Pegar lista**.
+
+Formato Markdown:
 
 ```markdown
-# Mi lista de dibujos
+# Dibujos de hoy
 
 | Nombre | URL | Duración |
 | --- | --- | --- |
-| Bluey | https://www.disneyplus.com/es-es/play/ID_BLUEY | 7:30 |
-| SuperKitties | https://www.disneyplus.com/es-es/play/ID_KITTIES | |
+| Mi primer capítulo | https://www.disneyplus.com/es-es/play/ID-DEL-EPISODIO | 7:30 |
+| Mi segundo capítulo | https://www.disneyplus.com/es-es/play/OTRO-ID | |
 ```
 
-La duración admite minutos (`7`), MM:SS (`7:30`) o HH:MM:SS. Un campo vacío queda pendiente. Las URLs reales admiten letras, números y guiones; el ejemplo usa marcadores que debes sustituir. El archivo no incluye estadísticas ni datos de cuenta. Importar conserva el orden y permite repetir episodios. Límite de importación: 500 capítulos y 1 MB.
+Sustituye los identificadores del ejemplo por enlaces reales. Para pegar una lista, usa una línea por capítulo:
 
-## Duración visible en Disney+
+```text
+Nombre del capítulo | https://www.disneyplus.com/es-es/play/ID-DEL-EPISODIO | 7:30
+```
 
-El adaptador intenta leer:
+La duración admite minutos (`7`), `MM:SS` (`7:30`) o `HH:MM:SS` (`1:02:30`). Un valor vacío queda pendiente. La importación valida el archivo completo antes de añadirlo y admite hasta **500 capítulos y 1 MB**.
 
-1. La duración finita del vídeo.
-2. Textos ARIA con transcurrido/total.
-3. Los relojes visibles del reproductor, incluidos los repartidos entre elementos hijos y shadow roots abiertos.
-4. Transcurrido + restante cuando el restante está identificado por signo negativo o etiqueta.
-5. Un reloj identificado expresamente como duración total.
+Las altas individuales rechazan duplicados. Las importaciones conservan las repeticiones explícitas y el orden del archivo. Una lista exportada no incluye estadísticas ni datos de cuenta.
 
-No usa porcentajes ambiguos ni el final del búfer como duración. Dos relojes positivos sin identificar total/restante se consideran ambiguos. Si no puede interpretarlo, el capítulo se añade y queda el campo MM:SS vacío para escribirlo directamente. El total de la lista avisa de tiempos pendientes. Una duración que aparezca durante reproducción también se aprende.
+## Estadísticas y almacenamiento
 
-La investigación confirmó la limitación del lector anterior (sólo duración nativa y un patrón ARIA), pero no se ha inspeccionado la sesión privada del usuario. Los nuevos formatos se prueban con DOM simulado y la captura final debe comprobarse con Disney+. El diagnóstico está en **Más opciones → Comprobar reproductor**.
+**Descargar estadísticas** genera un informe Markdown con el tiempo medido, el resumen mensual y el detalle de las sesiones y capítulos. En **Más opciones** puedes descargar CSV y JSON.
 
-## Estadísticas, sólo como descarga
+- La extensión almacena lista, configuración e historial en `chrome.storage.local`.
+- No tiene backend propio ni envía informes a un servidor de Chain Chapters.
+- El historial sólo incluye sesiones medidas por la extensión; no recupera el historial anterior de Disney+.
+- El reparto por días y meses usa el huso horario local del navegador.
+- Desinstalar la extensión o borrar sus datos puede eliminar el historial. Puedes exportarlo previamente; la interfaz importa listas Markdown, no restaura informes JSON.
 
-No hay tablas ni panel de estadísticas en la interfaz. **Descargar estadísticas** genera un Markdown con total medido, resumen por mes y detalle de cada sesión/capítulo. En **Más opciones** están las exportaciones CSV y JSON completo.
-
-Sólo se contabilizan sesiones medidas por la extensión desde 0.2.0, no el historial anterior de Disney+. El reparto por días usa el huso local del navegador y permite sesiones que cruzan de mes. Los datos quedan en `chrome.storage.local`; la web de desarrollo utiliza localStorage independiente. Exporta JSON si quieres una copia antes de desinstalar o borrar datos.
-
-## Por qué panel lateral y no iframe
-
-El panel lateral mantiene nuestra interfaz junto al reproductor oficial y tiene acceso a las APIs de extensión. Un iframe en una web normal no concede acceso al DOM de Disney+: la política de mismo origen restringe esa comunicación; además, la incrustación depende de los permisos que permita el sitio. No se modifican cabeceras ni protecciones del navegador.
-
-Referencias: [Chrome Side Panel API](https://developer.chrome.com/docs/extensions/reference/api/sidePanel), [política de mismo origen](https://developer.mozilla.org/en-US/docs/Web/Security/Defenses/Same-origin_policy). Como contraste se revisó [Saskatoon](https://github.com/jack-e-tanner/saskatoon), que sigue usando la duración nativa y no resolvía por sí solo los relojes de la UI de esta sesión.
-
-## Desarrollo y verificación
+## Desarrollo
 
 ```bash
-npm run dev       # Vista local
-npm test          # Casos de negocio, listas y reproductor simulado
-npm run build     # Tipado estricto + bundles de extensión en dist/
-npm run check     # Tests y compilación
+npm run dev      # Vista web local; consulta la URL que muestra Vite
+npm test         # Pruebas automatizadas con Vitest
+npm run build    # Comprobación TypeScript y extensión compilada en dist/
+npm run check    # Pruebas y compilación
 ```
 
-La vista local permite editar, importar/exportar y ver la despedida (`?view=end`). Para capturar y reproducir hay que usar el panel en Chrome. La web local y la extensión no comparten datos.
+La vista web permite trabajar en la interfaz, editar listas e importar/exportar archivos. **La captura y la reproducción requieren la extensión en Chrome**. La vista local usa `localStorage` y no comparte los datos de la extensión. Para previsualizar la despedida, añade `?view=end` a la URL local.
 
-Prueba real: recarga extensión y Disney+, captura dos capítulos cambiando de serie sin cerrar el panel; comprueba la duración y exporta/reimporta el .md; pon un límite de un minuto y verifica corte, despedida e informe descargado.
+### Arquitectura
 
-## Límites de la PoC
+El proyecto separa las reglas de negocio de React, del almacenamiento y de las APIs de Chrome:
 
-Sólo Disney+ de escritorio. No hay backend ni API privada ni soporte de anuncios. El observador recorre documento, shadow roots abiertos y marcos del mismo origen; no accede a marcos ajenos ni shadow roots cerrados. La medición es aproximada a intervalos cercanos a un segundo; suspensión del equipo o throttling fuerte puede retrasar el límite. La pantalla final cierra la sesión, pero no bloquea el navegador ni impide iniciar otra.
+| Carpeta | Responsabilidad |
+| --- | --- |
+| `src/domain/` | Episodios, identidad de URLs y estado de listas y sesiones. |
+| `src/application/` | Casos de uso, importación/exportación y estadísticas. |
+| `src/infrastructure/` | Persistencia y navegación del reproductor. |
+| `src/extension/` | Coordinador, menú contextual y observación del DOM de Disney+. |
+| `src/presentation/` | Panel React, edición de listas y pantalla final. |
+| `tests/` | Pruebas de negocio, captura, tiempos y reproducción simulada. |
 
-Arquitectura y métodos: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Los adaptadores de infraestructura, el coordinador y el observador utilizan **Singleton** donde corresponde para compartir estado y evitar registros duplicados. Los casos de uso reciben sus dependencias mediante puertos para poder probarse sin Chrome.
 
-## Botón derecho · Añadir a Chain Chapters
+Más detalles en [Arquitectura y métodos](docs/ARCHITECTURE.md).
 
-En Disney+, haz clic derecho y elige **Añadir a Chain Chapters**. Sobre la página/vídeo añade el capítulo abierto; sobre un enlace directo `/play/ID` o `/video/ID` añade ese episodio. La opción se limita a páginas de Disney+ y no interpreta fichas de series como episodios. Si no puede obtener título o duración del enlace, puedes corregirlos en la fila.
+### Verificación de la captura
 
-El panel lateral se abre para mostrar la lista y un mensaje de resultado. Con una cola en reproducción, se mantiene la regla de detenerla antes de editar. La actualización añade el permiso `contextMenus`; recarga la extensión y la pestaña Disney+.
+La versión 0.3.6 cuenta con **46 pruebas automatizadas**. Incluye además una prueba en navegador basada en una tarjeta real facilitada durante el desarrollo:
 
-Referencia: [API de menús contextuales de Chrome](https://developer.chrome.com/docs/extensions/reference/api/contextMenus).
+1. Ejecuta `npm run build` y `npm run dev`.
+2. Abre `/tests/fixtures/disney-card.html` en la URL local de Vite.
+3. Debe mostrar **PASS**, el título del episodio y `durationSeconds: 1661` (**27:41**).
+
+Esta prueba cubre la lectura del DOM, el clic sobre el icono SVG y la respuesta del observador compilado después de retirar la tarjeta. No sustituye la comprobación con una sesión real de Disney+.
+
+Para comprobar el flujo completo, captura dos episodios de distintas series, reproduce la lista, verifica el salto y prueba un límite corto. Comprueba también la despedida y el informe descargado.
+
+## Problemas habituales
+
+| Problema | Qué comprobar |
+| --- | --- |
+| El menú no aparece o sigue el comportamiento antiguo | Recarga la extensión y después la pestaña de Disney+. |
+| El observador no responde | Comprueba que estás en Disney+ y recarga esa pestaña tras actualizar. |
+| Nombre o duración pendientes | Edita la fila; la estructura de la página puede no coincidir con los formatos reconocidos. |
+| No avanza al siguiente episodio | Comprueba que la sesión se inició desde el panel y que la reproducción automática de Disney+ está desactivada. Consulta **Más opciones → Comprobar reproductor**. |
+| Capturar no funciona en localhost | Esa vista es para desarrollo; usa el panel de la extensión en Chrome. |
+
+## Alcance y limitaciones
+
+Es una prueba de concepto para Disney+ en Chrome de escritorio. No incluye soporte para otras plataformas ni para reproducción con anuncios. Los cambios en la web de Disney+ pueden requerir actualizar el lector.
+
+La medición es aproximada. La suspensión del equipo o la limitación de temporizadores del navegador pueden retrasar el corte. La pantalla final termina la sesión, pero **no bloquea el navegador ni impide iniciar otra reproducción**: no es un sistema de control parental resistente a manipulaciones.
+
+La extensión trabaja junto al reproductor oficial, sin descargar los vídeos. El observador sólo accede al DOM permitido por el navegador, incluidos componentes con shadow DOM abierto y marcos del mismo origen.
+
+Proyecto independiente, sin afiliación con Disney.

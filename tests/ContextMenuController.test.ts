@@ -21,9 +21,8 @@ describe('Añadir desde el botón derecho',()=>{
     const add=vi.fn().mockResolvedValue(undefined);
     capture.mockResolvedValue({title:'Bluey',url:current,durationSeconds:450});
     await new ContextMenuController(add).handle({linkUrl:other,pageUrl:current},{id:7,url:current,title:'Bluey'});
-    expect(add.mock.calls[0][0].url).toBe(other);
-    expect(add.mock.calls[0][0].durationSeconds).toBeNull();
-    expect(add.mock.calls[0][0].title).not.toBe('Bluey');
+    expect(add).toHaveBeenCalledWith({url:other,title:'Capítulo pendiente de nombre',durationSeconds:null});
+    expect(store.mock.calls[0][0][CONTEXT_FEEDBACK_KEY].error).toBe(false);
   });
   it('permite añadir un enlace directo aunque la página no responda',async()=>{
     const add=vi.fn().mockResolvedValue(undefined);capture.mockRejectedValue(new Error('Sin content script'));

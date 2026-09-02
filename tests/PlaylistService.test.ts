@@ -50,13 +50,10 @@ describe('Cola de episodios', () => {
       expect(() => normalizeEpisodeUrl(url)).toThrow();
     }
   });
-  it('respeta el orden editado y conserva episodios repetidos', async () => {
+  it('rechaza duplicados aunque cambien el idioma y los parámetros de la URL', async () => {
     const { service } = await setup();
-    await service.add('Bluey otra vez', 'https://www.disneyplus.com/play/bluey');
-    const { episodes } = await service.getState();
-    await service.move(episodes[2].id, -1);
-    await service.remove(episodes[0].id);
-    expect((await service.getState()).episodes.map(e => e.title)).toEqual(['Bluey otra vez', 'Spidey']);
+    await expect(service.add('Otro nombre', 'https://disneyplus.com/es-es/video/bluey?tracking=1')).rejects.toThrow('ya está en tu lista');
+    expect((await service.getState()).episodes).toHaveLength(2);
   });
   it('pasa de Bluey a Spidey y termina sin abrir un tercer episodio', async () => {
     const { service, player } = await setup();

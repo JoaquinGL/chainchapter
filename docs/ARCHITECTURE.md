@@ -1,4 +1,4 @@
-# Arquitectura 0.3.1
+# Arquitectura 0.3.6
 
 El dominio y los casos de uso no importan React ni Chrome. El worker compone dependencias y serializa todas las escrituras. Los adaptadores aíslan DOM, almacenamiento y navegación.
 
@@ -23,7 +23,7 @@ DisneyPlayerObserver → PULSE / ENDED ──┘
 | Método | Función |
 |---|---|
 | `getState()` | Leer el estado. |
-| `add(title,url,duration)` | Validar y añadir. |
+| `add(title,url,duration)` | Validar, rechazar episodios ya presentes y añadir. |
 | `setDuration(id,seconds)` | Corregir duración conocida o pendiente. |
 | `setLimit(seconds)` | Guardar límite o null. |
 | `remove(id)` / `move(id,direction)` | Editar cola inactiva. |
@@ -88,3 +88,9 @@ El manifiesto define `side_panel.default_path` y elimina `action.default_popup`.
 `ContextMenuController.install()` crea un único menú limitado a Disney+ al instalar/actualizar. `listen()` registra el listener al iniciar el worker y abre el panel dentro del gesto de usuario. `handle()` valida y prioriza `linkUrl`, solicita `CAPTURE_CONTEXT` al documento principal y llama al caso de uso ADD mediante la cola existente. Nunca utiliza `srcUrl` de un vídeo blob como enlace del episodio. Si el observador no responde, un enlace directo válido se guarda con título de respaldo y duración pendiente.
 
 `feedback()` guarda brevemente el resultado fuera del estado de la cola; el panel lo muestra aunque se haya abierto después de la operación. No se amplían los dominios permitidos. El único permiso adicional es `contextMenus`.
+
+## Captura de tarjetas (0.3.6)
+
+`EpisodeMetadataReader` separa la lectura del catálogo del seguimiento del vídeo. `fromClick()` captura la tarjeta al abrir el menú contextual; `read()` busca el enlace exacto y `disneyCard()` lee los campos `data-testid` de título y metadatos. La duración accesible excluye los nodos `aria-hidden` para no sumar la versión redondeada y la exacta. `currentTitle()` lee el título del reproductor abierto.
+
+El observador conserva temporalmente la captura y sólo la reutiliza para la misma identidad de episodio. El menú guarda una entrada editable si faltan metadatos y distingue un fallo de comunicación del observador de una tarjeta sin título reconocido. Las altas se serializan en el worker; la comprobación de duplicados pertenece a `PlaylistService.add()`. Las importaciones mantienen repeticiones explícitas.

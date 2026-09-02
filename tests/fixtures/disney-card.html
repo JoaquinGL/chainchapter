@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Prueba de captura Disney+</title></head><body>
+<!-- Estructura y textos facilitados por el usuario; se omiten clases visuales y recursos externos. -->
+<div data-testid="grid-pagination-spy"><a data-item-id="8029b228-1f81-4e54-af42-f3f7c3a340d3" data-testid="set-item" aria-label="Temporada 2, episodio 24: Robo de la torre del parque / Gatita pateadora Ladrón Felino roba una torre. Rata da patadas a una luna en miniatura. Calificación: 0+ Selecciona el vídeo para verlo." href="/es-es/play/8029b228-1f81-4e54-af42-f3f7c3a340d3">
+<div data-testid="set-item-tile"><div><img alt=""></div><div><div><div data-testid="set-item-play-icon"><svg><path></path></svg></div></div></div></div>
+<div data-testid="standard-regular-list-item-title"><div>24. Robo de la torre del parque / Gatita pateadora</div></div>
+<div data-testid="standard-regular-list-item-description">Ladrón Felino roba una torre. Rata da patadas a una luna en miniatura.</div>
+<div data-testid="standard-regular-list-metadata"><span><span aria-hidden="true">(27 min)</span><span>27 minutos,41 s</span></span></div>
+</a></div>
+<pre id="result">Ejecutando…</pre>
+<script type="module">
+const output=document.getElementById('result');
+try {
+  const base=document.createElement('base');base.href='https://www.disneyplus.com/';document.head.append(base);
+  const {EpisodeMetadataReader}=await import(location.origin+'/src/extension/EpisodeMetadataReader.ts');
+  const anchor=document.querySelector('a');
+  const reader=new EpisodeMetadataReader();
+  const expected={url:anchor.href,title:'24. Robo de la torre del parque / Gatita pateadora',durationSeconds:1661};
+  function verify(actual,label){if(JSON.stringify(actual)!==JSON.stringify(expected))throw Error(label+': '+JSON.stringify(actual));}
+  verify(reader.read(document,anchor.href),'DOM real');
+  verify(reader.fromClick(document,[anchor.querySelector('path'),anchor]),'Clic en el icono');
+  let listener;
+  window.chrome={runtime:{onMessage:{addListener:fn=>listener=fn},sendMessage:async()=>({ok:false,error:'Sin sesión'})}};
+  const script=document.createElement('script');script.src=location.origin+'/dist/content.js';
+  await new Promise((resolve,reject)=>{script.onload=resolve;script.onerror=reject;document.body.append(script);});
+  anchor.querySelector('path').dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,composed:true}));
+  // Simula que el panel provoca que desaparezca la tarjeta tras el clic.
+  anchor.remove();
+  let response;
+  listener({type:'CAPTURE_CONTEXT',url:expected.url},{},value=>response=value);
+  verify(response,'Observador compilado y tarjeta retirada');
+  output.textContent='PASS: DOM real, clic en icono y observador compilado con tarjeta retirada.\n'+JSON.stringify(response,null,2);
+} catch(error){output.textContent='FAIL: '+error.stack;}
+</script></body></html>

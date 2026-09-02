@@ -1,3 +1,4 @@
+import { cleanEpisodeTitle } from './EpisodeMetadataReader';
 import { isSameEpisode, normalizeEpisodeUrl } from '../domain/Episode';
 import type { EpisodeDraft } from '../application/PlaylistMarkdown';
 
@@ -38,15 +39,18 @@ export class ContextMenuController {
       try { url=normalizeEpisodeUrl(info.linkUrl ?? info.pageUrl ?? tab.url ?? ''); }
       catch {throw new Error('Abre el capítulo para añadirlo. Este enlace no es una URL directa de reproducción de Disney+.');}
       const current=isSameEpisode(url,tab.url??'');
-      let episode:EpisodeDraft={url,title:current?(tab.title||'Capítulo de Disney+'):`Capítulo ${url.split('/').at(-1)?.slice(0,8)}`,durationSeconds:null};
+      let episode:EpisodeDraft={url,title:current?cleanEpisodeTitle(tab.title??''):'',durationSeconds:null};
+      let captureFailed=false;
       try {
         const captured:EpisodeDraft=await chrome.tabs.sendMessage(tab.id,{type:'CAPTURE_CONTEXT',url},{frameId:0});
         if(captured && isSameEpisode(captured.url,url)) {
-          episode={url,title:captured.title?.trim()||episode.title,durationSeconds:captured.durationSeconds??null};
+          episode={url,title:cleanEpisodeTitle(captured.title??'')||episode.title,durationSeconds:captured.durationSeconds??null};
         }
-      }catch { /* Un enlace válido se puede añadir aunque aún no esté cargado el observador. */ }
+      }catch { captureFailed=true; }
+      const missingTitle=!episode.title;
+      if(missingTitle)episode.title='Capítulo pendiente de nombre';
       await this.add(episode);
-      await this.feedback(`${episode.title} añadido a tu lista.${episode.durationSeconds?'':' Puedes completar el tiempo en su fila.'}`,false);
+      await this.feedback(missingTitle ? (captureFailed ? 'Enlace guardado. El observador de la extensión no ha respondido. Recarga esta pestaña después de actualizar la extensión.' : 'Enlace guardado. El lector no ha encontrado el título en esta tarjeta; puedes editarlo en la lista.') : `${episode.title} añadido a tu lista.${episode.durationSeconds?'':' Duración pendiente.'}`,false);
     }catch(error){await this.feedback(error instanceof Error?error.message:String(error),true);}
   }
 
