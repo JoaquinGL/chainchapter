@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.vite/
+.DS_Store
+*.local
+
+# Configuración privada y registros locales
+.env
+.env.*
+!.env.example
+*.log
+coverage/
