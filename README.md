@@ -181,3 +181,7 @@ La medición es aproximada. La suspensión del equipo o la limitación de tempor
 La extensión trabaja junto al reproductor oficial, sin descargar los vídeos. El observador sólo accede al DOM permitido por el navegador, incluidos componentes con shadow DOM abierto y marcos del mismo origen.
 
 Proyecto independiente, sin afiliación con Disney.
+
+## Privacidad
+
+Consulta la [política de privacidad](PRIVACY.md) y los [materiales de publicación](store/LISTING.md).
