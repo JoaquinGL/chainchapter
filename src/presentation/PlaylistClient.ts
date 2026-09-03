@@ -1,3 +1,4 @@
+import { withTimeout } from '../infrastructure/withTimeout';
 import { PlaylistService } from '../application/PlaylistService';
 import { StorageRepository } from '../infrastructure/StorageRepository';
 import type { Command, Reply } from '../extension/messages';
@@ -9,10 +10,17 @@ export class PlaylistClient {
     open: async () => { throw new Error('La reproducción necesita la extensión instalada.'); },
     finish: async () => {},
   });
+  private queue: Promise<unknown> = Promise.resolve();
   private constructor() {}
   static getInstance(): PlaylistClient { return this.instance ??= new PlaylistClient(); }
   /** Ejecuta un caso de uso y devuelve el estado actualizado. */
-  async execute(command: Command) {
+  execute(command: Command) {
+    const operation=this.queue.then(()=>this.perform(command));
+    this.queue=operation.catch(()=>undefined);
+    return operation;
+  }
+  /** Ejecuta en orden para que una edición no sobrescriba otra acción simultánea. */
+  private async perform(command: Command) {
     if (isExtension) {
       const reply: Reply = await chrome.runtime.sendMessage(command);
       if (!reply.ok) throw new Error(reply.error);
@@ -38,7 +46,7 @@ export class PlaylistClient {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab?.id === undefined) throw new Error('Abre Disney+ en la pestaña activa.');
     try {
-      const result: unknown = await chrome.tabs.sendMessage(tab.id, { type: 'DIAGNOSTICS' });
+      const result: unknown = await withTimeout(chrome.tabs.sendMessage(tab.id, { type: 'DIAGNOSTICS' }),4000,'El observador no responde.');
       if (typeof result !== 'string') throw new Error('Observador antiguo');
       return result;
     } catch { throw new Error('Recarga la extensión y después la pestaña Disney+ para activar el observador actualizado.'); }
@@ -49,7 +57,7 @@ export class PlaylistClient {
     if (tab?.id === undefined || !tab.url || !/^https:\/\/(www\.)?disneyplus\.com\//.test(tab.url)) {
       throw new Error('Abre un episodio en Disney+ primero.');
     }
-    try { return await chrome.tabs.sendMessage(tab.id, { type: 'CAPTURE' }); }
+    try { return await withTimeout(chrome.tabs.sendMessage(tab.id, { type: 'CAPTURE' }),4000,'El observador no responde.'); }
     catch { throw new Error('Recarga Disney+ tras instalar la extensión e inténtalo otra vez.'); }
   }
 }

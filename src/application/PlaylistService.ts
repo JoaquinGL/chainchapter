@@ -35,6 +35,9 @@ export class PlaylistService {
     const state=await this.editableState();
     const index=state.episodes.findIndex(e=>e.id===id);
     if(index<0) throw new Error('Este capítulo ya no está en la lista.');
+    if(!isSameEpisode(state.episodes[index].url,entry.url) && state.episodes.some(e=>e.id!==id && isSameEpisode(e.url,entry.url))) {
+      throw new Error('Este capítulo ya está en tu lista.');
+    }
     state.episodes[index]=entry;await this.repository.save(state);
   }
   /** Corrige una duración sin volver a crear la entrada. */

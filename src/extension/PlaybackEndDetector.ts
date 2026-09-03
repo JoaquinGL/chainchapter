@@ -4,6 +4,7 @@ export interface PlaybackSnapshot {
   duration: number;
   ended: boolean;
   seeking: boolean;
+  paused?: boolean;
   readyState: number;
 }
 
@@ -18,6 +19,7 @@ export class PlaybackEndDetector {
   isFinished(video: PlaybackSnapshot): boolean {
     if (video.seeking) { this.reset(); return false; }
     if (video.ended) return true;
+    if (video.paused) { this.reset(); return false; }
     const nearEnd = Number.isFinite(video.duration) && video.duration > 0
       && Number.isFinite(video.currentTime) && video.currentTime > 0
       && video.readyState >= 2 && video.duration - video.currentTime <= 0.75

@@ -29,6 +29,15 @@ async function setup() {
 }
 
 describe('Cola de episodios', () => {
+  it('rechaza duplicados al editar una URL sin perder la entrada anterior', async () => {
+    const {service}=await setup();
+    const before=await service.getState();
+    const entry=before.episodes[1];
+    await expect(service.updateEpisode(entry.id,{title:'Duplicado',url:'https://www.disneyplus.com/es-es/play/bluey',durationSeconds:300})).rejects.toThrow('ya está');
+    expect(await service.getState()).toEqual(before);
+    await service.updateEpisode(entry.id,{...entry,title:'Nombre corregido'});
+    expect((await service.getState()).episodes[1].title).toBe('Nombre corregido');
+  });
   it('vacía la lista conservando el historial y el límite', async () => {
     const {service}=await setup();
     await service.setLimit(3600);

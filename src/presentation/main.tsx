@@ -35,7 +35,7 @@ function App(){
       };
       const changed=(changes:Record<string,chrome.storage.StorageChange>)=>{refresh();if(changes[CONTEXT_FEEDBACK_KEY])feedback(changes[CONTEXT_FEEDBACK_KEY].newValue as ContextFeedback);};
       chrome.storage.onChanged.addListener(changed);
-      void chrome.storage.local.get<Record<string,ContextFeedback>>(CONTEXT_FEEDBACK_KEY).then(value=>feedback(value[CONTEXT_FEEDBACK_KEY]));
+      void chrome.storage.local.get<Record<string,ContextFeedback>>(CONTEXT_FEEDBACK_KEY).then(value=>feedback(value[CONTEXT_FEEDBACK_KEY])).catch(e=>setError(e.message));
       return()=>chrome.storage.onChanged.removeListener(changed);
     }
   },[]);

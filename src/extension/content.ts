@@ -69,7 +69,7 @@ export class DisneyPlayerObserver {
     const video = this.currentVideo;
     const seconds = PlayerDiagnostics.seconds;
     return [
-      `Observador 0.3.7: ${video ? 'vídeo detectado' : 'no se encuentra el vídeo'}.`,
+      `Observador 0.4.0: ${video ? 'vídeo detectado' : 'no se encuentra el vídeo'}.`,
       video ? `Tiempo ${seconds(video.currentTime)} / ${seconds(video.duration)} s. Final: ${video.ended ? 'sí' : 'no'}. Buscando: ${video.seeking ? 'sí' : 'no'}.` : '',
       `Candidatos: ${this.inventory.videos.length}. Marcos inaccesibles: ${this.inventory.inaccessibleFrames}.`,
       ...this.inventory.videos.map((candidate, index) => `Vídeo ${index + 1}${candidate === video ? ' (seleccionado)' : ''}: ${seconds(candidate.currentTime)} / ${seconds(candidate.duration)} s, readyState=${candidate.readyState}, pausado=${candidate.paused}, final=${candidate.ended}.`),

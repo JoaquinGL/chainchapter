@@ -1,4 +1,4 @@
-# Arquitectura 0.3.7
+# Arquitectura 0.4.0
 
 El dominio y los casos de uso no importan React ni Chrome. El worker compone dependencias y serializa todas las escrituras. Los adaptadores aíslan DOM, almacenamiento y navegación.
 
@@ -95,3 +95,7 @@ El manifiesto define `side_panel.default_path` y elimina `action.default_popup`.
 `EpisodeMetadataReader` separa la lectura del catálogo del seguimiento del vídeo. `fromClick()` captura la tarjeta al abrir el menú contextual; `read()` busca el enlace exacto y `disneyCard()` lee los campos `data-testid` de título y metadatos. La duración accesible excluye los nodos `aria-hidden` para no sumar la versión redondeada y la exacta. `currentTitle()` lee el título del reproductor abierto.
 
 El observador conserva temporalmente la captura y sólo la reutiliza para la misma identidad de episodio. El menú guarda una entrada editable si faltan metadatos y distingue un fallo de comunicación del observador de una tarjeta sin título reconocido. Las altas se serializan en el worker; la comprobación de duplicados pertenece a `PlaylistService.add()`. Las importaciones mantienen repeticiones explícitas.
+
+## Estabilidad 0.4.0
+
+`PlaylistClient.execute()` serializa también las operaciones locales; un error no bloquea la siguiente operación. `withTimeout()` acota las lecturas del observador y la petición de pausa; no reintenta escrituras. El coordinador conserva su propia cola para los mensajes de todos los contextos. `updateEpisode()` comprueba duplicados al cambiar la identidad del enlace. `PlaybackEndDetector` no interpreta una pausa manual cerca del final como un final natural; `ended` sigue teniendo prioridad.

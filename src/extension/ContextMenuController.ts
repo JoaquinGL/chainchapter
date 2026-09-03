@@ -1,3 +1,4 @@
+import { withTimeout } from '../infrastructure/withTimeout';
 import { cleanEpisodeTitle } from './EpisodeMetadataReader';
 import { isSameEpisode, normalizeEpisodeUrl } from '../domain/Episode';
 import type { EpisodeDraft } from '../application/PlaylistMarkdown';
@@ -42,7 +43,7 @@ export class ContextMenuController {
       let episode:EpisodeDraft={url,title:current?cleanEpisodeTitle(tab.title??''):'',durationSeconds:null};
       let captureFailed=false;
       try {
-        const captured:EpisodeDraft=await chrome.tabs.sendMessage(tab.id,{type:'CAPTURE_CONTEXT',url},{frameId:0});
+        const captured:EpisodeDraft=await withTimeout(chrome.tabs.sendMessage(tab.id,{type:'CAPTURE_CONTEXT',url},{frameId:0}),4000,'El observador no responde.');
         if(captured && isSameEpisode(captured.url,url)) {
           episode={url,title:cleanEpisodeTitle(captured.title??'')||episode.title,durationSeconds:captured.durationSeconds??null};
         }
