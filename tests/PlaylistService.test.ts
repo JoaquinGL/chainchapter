@@ -29,6 +29,28 @@ async function setup() {
 }
 
 describe('Cola de episodios', () => {
+  it('vacía la lista conservando el historial y el límite', async () => {
+    const {service}=await setup();
+    await service.setLimit(3600);
+    await service.start(42);
+    await service.stop();
+    const before=await service.getState();
+    await service.clear();
+    const after=await service.getState();
+    expect(after.episodes).toEqual([]);
+    expect(after.history).toEqual(before.history);
+    expect(after.session).toBeNull();
+    expect(after.limitSeconds).toBe(3600);
+    await service.clear();
+    expect(await service.getState()).toEqual(after);
+  });
+  it('rechaza vaciar la lista durante una reproducción activa', async () => {
+    const {service}=await setup();
+    await service.start(42);
+    const before=await service.getState();
+    await expect(service.clear()).rejects.toThrow('Detén');
+    expect(await service.getState()).toEqual(before);
+  });
   it('guarda los dos enlaces es-es y avanza al segundo manteniendo el mercado', async () => {
     const player = new RecordingPlayer();
     const service = new PlaylistService(new MemoryRepository(), player);

@@ -1,4 +1,4 @@
-# Arquitectura 0.3.6
+# Arquitectura 0.3.7
 
 El dominio y los casos de uso no importan React ni Chrome. El worker compone dependencias y serializa todas las escrituras. Los adaptadores aíslan DOM, almacenamiento y navegación.
 
@@ -26,6 +26,7 @@ DisneyPlayerObserver → PULSE / ENDED ──┘
 | `add(title,url,duration)` | Validar, rechazar episodios ya presentes y añadir. |
 | `setDuration(id,seconds)` | Corregir duración conocida o pendiente. |
 | `setLimit(seconds)` | Guardar límite o null. |
+| `clear()` | Vaciar episodios conservando historial y configuración; sólo con sesión inactiva. |
 | `remove(id)` / `move(id,direction)` | Editar cola inactiva. |
 | `start(tabId)` | Copiar la cola a una nueva sesión y abrir primer episodio. |
 | `record(tabId,url,runId,index,sourceId,totalSeconds,duration)` | Validar identidad, deduplicar muestras acumuladas, actualizar días/tiempo/duración y aplicar límite. |

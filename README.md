@@ -8,7 +8,7 @@
 
 Chain Chapters es una extensión de Chrome para crear listas de episodios de Disney+, incluso de distintas series, y reproducirlos en el orden elegido. Su panel lateral permanece abierto mientras navegas por el catálogo.
 
-**Versión actual: 0.3.6 · Prueba de concepto · React + TypeScript · Manifest V3**
+**Versión actual: 0.3.7 · Prueba de concepto · React + TypeScript · Manifest V3**
 
 ## Qué puedes hacer
 
@@ -82,6 +82,8 @@ En el reproductor intenta leer la duración del vídeo o interpretar sus control
 
 Los enlaces admitidos son URLs directas de episodios de Disney+: `/play/ID` o `/video/ID`, con prefijo de idioma opcional como `/es-es/`. Una ficha de serie no equivale a un enlace de episodio.
 
+**Vaciar lista** elimina todos los capítulos de una vez y conserva el historial y el límite configurado. Está desactivado si la lista está vacía o hay una reproducción en curso.
+
 ## Guardar, compartir y cargar listas
 
 **Guardar .md** descarga la lista como un archivo Markdown que puedes editar o compartir. **Cargar .md** añade sus capítulos a la lista existente. También puedes usar **Escribir capítulo** o **Pegar lista**.
@@ -147,7 +149,7 @@ Más detalles en [Arquitectura y métodos](docs/ARCHITECTURE.md).
 
 ### Verificación de la captura
 
-La versión 0.3.6 cuenta con **46 pruebas automatizadas**. Incluye además una prueba en navegador basada en una tarjeta real facilitada durante el desarrollo:
+La versión 0.3.7 cuenta con **48 pruebas automatizadas**. Incluye además una prueba en navegador basada en una tarjeta real facilitada durante el desarrollo:
 
 1. Ejecuta `npm run build` y `npm run dev`.
 2. Abre `/tests/fixtures/disney-card.html` en la URL local de Vite.

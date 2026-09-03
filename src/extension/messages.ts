@@ -6,6 +6,7 @@ export type Command =
   | { type: 'UPDATE'; id: string; episode: EpisodeDraft }
   | { type: 'DURATION'; id: string; seconds: number | null }
   | { type: 'LIMIT'; seconds: number | null }
+  | { type: 'CLEAR' }
   | { type: 'REMOVE'; id: string } | { type: 'MOVE'; id: string; direction: -1 | 1 }
   | { type: 'START' } | { type: 'STOP' } | { type: 'NEXT' }
   | { type: 'PULSE'; url: string; runId: string; index: number; sourceId: string; totalSeconds: number; durationSeconds: number | null }

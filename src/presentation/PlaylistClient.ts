@@ -25,6 +25,7 @@ export class PlaylistClient {
       case 'IMPORT': await this.local.importEpisodes(command.episodes); break;
       case 'UPDATE': await this.local.updateEpisode(command.id,command.episode); break;
       case 'DURATION': await this.local.setDuration(command.id, command.seconds); break;
+      case 'CLEAR': await this.local.clear(); break;
       case 'REMOVE': await this.local.remove(command.id); break;
       case 'MOVE': await this.local.move(command.id, command.direction); break;
       case 'STOP': await this.local.stop(); break;

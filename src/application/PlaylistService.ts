@@ -56,6 +56,12 @@ export class PlaylistService {
     state.episodes = state.episodes.filter(e => e.id !== id);
     await this.repository.save(state);
   }
+  /** Vacía los episodios en una sola escritura, conservando historial y configuración. */
+  async clear(): Promise<void> {
+    const state = await this.editableState();
+    state.episodes = [];
+    await this.repository.save(state);
+  }
   /** Mueve una entrada una posición. */
   async move(id: string, direction: -1 | 1): Promise<void> {
     const state = await this.editableState();

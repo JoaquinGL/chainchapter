@@ -81,6 +81,7 @@ function App(){
     if(file.size>1_000_000){setError('La lista supera 1 MB.');return;}
     try{await importText(await file.text());}catch(e){setError((e as Error).message);}
   }
+  async function clearList(){if(await run({type:'CLEAR'}))setNotice('Lista vaciada.');}
   async function diagnose(){setBusy(true);try{setNotice(await client.diagnose());setError('');}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
 
   return <main className="queue-app">
@@ -101,7 +102,7 @@ function App(){
     <div className="list-tools"><button disabled={busy||playing} onClick={()=>setManualOpen(!manualOpen)}>＋ Escribir capítulo</button><button disabled={busy||playing} onClick={()=>setPasteOpen(!pasteOpen)}>Pegar lista</button></div>
     {manualOpen&&<form className="inline-form" onSubmit={e=>{e.preventDefault();void addManual();}}><label>Nombre<input autoFocus value={title} onChange={e=>setTitle(e.target.value)} required placeholder="Bluey · El xilófono mágico"/></label><label>URL<input type="url" value={url} onChange={e=>setUrl(e.target.value)} required placeholder="https://www.disneyplus.com/es-es/play/…"/></label><label>Duración<input value={duration} onChange={e=>setDuration(e.target.value)} placeholder="7:30 (opcional)"/></label><button className="primary" disabled={busy||playing}>Añadir</button></form>}
     {pasteOpen&&<section className="inline-form"><label>Nombre | URL | Duración<textarea autoFocus value={markdown} onChange={e=>setMarkdown(e.target.value)} placeholder={example} rows={6}/></label><p className="hint">Una línea por capítulo. También acepta la tabla del archivo .md.</p><button className="primary" disabled={busy||playing||!markdown.trim()} onClick={()=>void importText(markdown)}>Añadir lista</button></section>}
-    <div className="file-tools"><button disabled={busy||playing} onClick={()=>fileInput.current?.click()}>↥ Cargar .md</button><button disabled={!state.episodes.length||busy} onClick={()=>download('mi-lista.md',PlaylistMarkdown.stringify(state.episodes),'text/markdown;charset=utf-8')}>↓ Guardar .md</button>
+    <div className="file-tools"><button disabled={busy||playing||!state.episodes.length} onClick={()=>void clearList()}>Vaciar lista</button><button disabled={busy||playing} onClick={()=>fileInput.current?.click()}>↥ Cargar .md</button><button disabled={!state.episodes.length||busy} onClick={()=>download('mi-lista.md',PlaylistMarkdown.stringify(state.episodes),'text/markdown;charset=utf-8')}>↓ Guardar .md</button>
       <input ref={fileInput} type="file" accept=".md,.markdown,text/markdown,text/plain" hidden aria-label="Archivo de lista Markdown" onChange={e=>{const file=e.target.files?.[0];e.target.value='';void importFile(file);}}/>
     </div>
     <div className="playback-bar">{playing?<><p className="live-status" role="status">{state.session!.limitSeconds!=null?`Quedan ${formatTime(Math.max(0,state.session!.limitSeconds-state.session!.watchedSeconds))}`:`${formatTime(state.session!.watchedSeconds)} vistos`}</p><div className="active-controls"><button disabled={busy} onClick={()=>void run({type:'NEXT'})}>Siguiente →</button><button disabled={busy} onClick={()=>void run({type:'STOP'})}>Detener cola</button></div></>:<button className="play-button" disabled={!isExtension||busy||!state.episodes.length} onClick={()=>void start()}>▶ Reproducir lista</button>}</div>

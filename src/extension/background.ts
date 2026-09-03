@@ -41,6 +41,7 @@ class BackgroundController {
       case 'UPDATE': await this.service.updateEpisode(command.id,command.episode); break;
       case 'DURATION': await this.service.setDuration(command.id, command.seconds); break;
       case 'LIMIT': await this.service.setLimit(command.seconds); break;
+      case 'CLEAR': await this.service.clear(); break;
       case 'REMOVE': await this.service.remove(command.id); break;
       case 'MOVE':
         if (command.direction !== -1 && command.direction !== 1) throw new Error('Dirección inválida.');
