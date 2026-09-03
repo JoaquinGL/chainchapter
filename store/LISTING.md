@@ -55,3 +55,15 @@ Chrome 116 o posterior. Requiere una cuenta de Disney+ con acceso a reproducció
 8. Exportar la lista Markdown, vaciarla e importarla.
 
 Sin reproducir contenido también se puede verificar la edición manual, importación/exportación de listas y la pantalla final desde Más opciones → Ver despedida. Los informes incluyen únicamente sesiones medidas por la extensión.
+
+## Estado de preparación
+
+- Paquete 0.4.0 cargado como borrador en Chrome Web Store.
+- ID de extensión: llldlilldghgbmfdjbgjgldjblhachfa.
+- Ficha en español, categoría Entretenimiento, distribución pública y gratuita.
+- Icono, captura de despedida e imagen promocional pequeña cargados.
+- Política de privacidad, propósito, permisos y uso local de datos declarados.
+- Instrucciones de prueba guardadas; no se han proporcionado credenciales personales.
+- Pendiente: el editor debe elegir y verificar su correo público de contacto. Google bloquea el envío por ese requisito.
+- La configuración de la cuenta muestra declaración de operador con verificación pendiente; corresponde al titular revisar esa declaración.
+- No enviada todavía a revisión ni publicada.
